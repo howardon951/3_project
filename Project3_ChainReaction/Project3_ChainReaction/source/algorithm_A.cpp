@@ -26,21 +26,21 @@ public:
 class DuplicateBoard
 {
 public:
-    DuplicateBoard(Board a);
+    DuplicateBoard(Board a); //duplicate a DuplicateBoard from a board
     Cell cells[ROW][COL];
     void cell_reaction_marker();            // After the explosion, mark all the cell that  will explode in next iteration
     bool cell_is_full(Cell *cell);          // Check wether the cell is full of orbs and set the explosion variable to be true
     void add_orb(int i, int j, char color); // Add orb into the cell (i, j)
     void cell_reset(int i, int j);          // Reset the cell to the initial state (color = 'w', orb_num = 0)
     void cell_explode(int i, int j);        // The explosion of cell (i, j). It will add the orb into neighbor cells
-    bool cell_chain_reaction(int color);    // If there is aa explosion, check wether the chain reaction is active
+    bool cell_chain_reaction(int color);    //** If there is a explosion, check wether the chain reaction is win or not
 
     int get_orbs_num(int i, int j);
     int get_capacity(int i, int j);
     char get_cell_color(int i, int j);
     bool place_orb(int i, int j, Player *player);      // Use this function to place a orb into a cell
     void print_current_board(int i, int j, int round); // Print out the current state of the hole board
-    bool win_the_game(int color);                      // The function that is used to check wether the player wins the game after his/her placemnet operation
+    bool win_the_game(int color);                      //check wether the player wins the game after his/her placemnet operation
 };
 
 bool LegalStep(int row, int col, int color, DuplicateBoard d_board);                  //check if it is a legal step
@@ -203,6 +203,7 @@ char DuplicateBoard::get_cell_color(int i, int j)
 }
 
 //////////// My Algorithm ////////////
+
 void algorithm_A(Board board, Player player, int index[])
 {
     srand(time(NULL));
@@ -256,7 +257,16 @@ void algorithm_A(Board board, Player player, int index[])
     else ////would not lose the game////
     {
         int size = container.getsize();
-        Node orb = container.get(rand() % size);
+        int idx, tmp = 0;
+        for (int i = 0; i < size; i++)
+        {
+            if (container.get(i).affect_increment > tmp)
+            {
+                tmp = container.get(i).affect_increment;
+                idx = i;
+            }
+        }
+        Node orb = container.get(idx);
         index[0] = orb.row;
         index[1] = orb.col;
     }
@@ -364,3 +374,65 @@ int count_nodes(int r, int c, int color, DuplicateBoard d_board)
     }
     return after_num - before_num;
 }
+/*
+void algorithm_F(Board board, Player player, int index[])
+{
+    srand(time(NULL));
+    int color = player.get_color();
+    DuplicateBoard d_board(board);
+
+    ////// the condition that would win the game in one step //////
+    for (int r = 0; r < ROW; ++r)
+    {
+        for (int c = 0; c < COL; ++c)
+        {
+            if (LegalStep(r, c, color, d_board))
+            {
+                if (virtualCR_placeOrb_WIN(r, c, color, d_board))
+                {
+                    index[0] = r;
+                    index[1] = c;
+                    return;
+                }
+            }
+        }
+    }
+
+    ////// the condition that would not lose the game in opponent's coming one step //////
+    nodecontainer container;
+    for (int r = 0; r < ROW; ++r)
+    {
+        for (int c = 0; c < COL; ++c)
+        {
+            if (LegalStep(r, c, color, d_board) && virtualCR_placeOrb_NOTLose(r, c, color, d_board))
+            {
+                container.push(r, c, count_nodes(r, c, color, d_board));
+            }
+        }
+    }
+
+    if (container.isempty()) ////must lose condition////
+    {
+        for (int r = 0; r < ROW; ++r)
+        {
+            for (int c = 0; c < COL; ++c)
+            {
+                if (LegalStep(r, c, color, d_board))
+                {
+                    index[0] = r;
+                    index[1] = c;
+                }
+            }
+        }
+    }
+    else ////would not lose the game////
+    {
+        int size = container.getsize();
+       
+        Node orb = container.get(rand()%size);
+        index[0] = orb.row;
+        index[1] = orb.col;
+    }
+}
+//////////// End of My Algorithm ////////////
+*/
